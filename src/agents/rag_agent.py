@@ -12,8 +12,8 @@ class RAGAgent:
         # إعداد الموديل عبر OpenRouter
         self.llm = ChatOpenAI(
             model="openai/gpt-4o-mini",
-            openai_api_key=os.getenv("OPENROUTER_API_KEY"),
-            openai_api_base=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip('/')
+            openai_api_key=os.getenv("OPENROUTER_API_KEY", "").strip(),
+            openai_api_base=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").strip().rstrip('/')
         )
         # جلب أداة البحث من الملف اللي صاوبنا
         self.retriever = get_retriever()

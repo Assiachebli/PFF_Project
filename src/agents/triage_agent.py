@@ -12,8 +12,8 @@ class TriageAgent:
         # كنصحك بـ "anthropic/claude-3.5-sonnet" أو "openai/gpt-4o-mini" حيت واعرين ف الدارجة
         self.llm = ChatOpenAI(
             model="openai/gpt-4o-mini", 
-            openai_api_key=os.getenv("OPENROUTER_API_KEY"),
-            openai_api_base=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip('/')
+            openai_api_key=os.getenv("OPENROUTER_API_KEY", "").strip(),
+            openai_api_base=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").strip().rstrip('/')
         )
 
     def analyze_complaint(self, complaint_text):

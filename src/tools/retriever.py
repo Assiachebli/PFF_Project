@@ -11,8 +11,8 @@ def get_retriever():
     # نفس الإعدادات اللي درنا ف الـ Ingestion
     embeddings = OpenAIEmbeddings(
         model="openai/text-embedding-3-small",
-        openai_api_key=os.getenv("OPENROUTER_API_KEY"),
-        openai_api_base=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip('/')
+        openai_api_key=os.getenv("OPENROUTER_API_KEY", "").strip(),
+        openai_api_base=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").strip().rstrip('/')
     )
     
     # تحميل قاعدة البيانات
