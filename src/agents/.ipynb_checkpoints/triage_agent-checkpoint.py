@@ -1,4 +1,5 @@
 import os
+import re
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -6,14 +7,23 @@ from langchain_core.output_parsers import JsonOutputParser
 
 load_dotenv()
 
+# Hardcoded base URL - no environment variable needed
+OPENROUTER_BASE_URL ="https://openrouter.ai/api/v1"
+
+def clean_env_var(value):
+    """Remove all non-printable characters from a string."""
+    if not value:
+        return ""
+    return re.sub(r'[\x00-\x1f\x7f-\x9f]', '', value).strip()
+
 class TriageAgent:
     def __init__(self):
         # إعداد الموديل عبر OpenRouter
         # كنصحك بـ "anthropic/claude-3.5-sonnet" أو "openai/gpt-4o-mini" حيت واعرين ف الدارجة
         self.llm = ChatOpenAI(
             model="openai/gpt-4o-mini", 
-            openai_api_key=os.getenv("OPENROUTER_API_KEY"),
-            openai_api_base=os.getenv("OPENROUTER_BASE_URL").rstrip('/')
+            openai_api_key=clean_env_var(os.getenv("OPENROUTER_API_KEY")),
+            openai_api_base=OPENROUTER_BASE_URL
         )
 
     def analyze_complaint(self, complaint_text):
