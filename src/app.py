@@ -33,13 +33,17 @@ st.set_page_config(
 # --- 2. System Setup ---
 sys.path.append(os.getcwd())
 
-# Import Agents (Safe Import)
+# Import Agents (Safe Import - store error for later display)
+IMPORT_ERROR = None
+TriageAgent = None
+RAGAgent = None
+ReportingAgent = None
 try:
     from src.agents.triage_agent import TriageAgent
     from src.agents.rag_agent import RAGAgent
     from src.agents.reporter import ReportingAgent
 except ImportError as e:
-    st.error(f"Erreur d'importation des agents : {e}")
+    IMPORT_ERROR = str(e)
 
 # --- 3. Custom CSS (Glassmorphism, Responsive, French LTR) ---
 st.markdown("""
@@ -276,6 +280,14 @@ def dashboard_view():
     st.markdown("</div>", unsafe_allow_html=True)
 
     if process and user_input:
+        # Check for import errors first
+        if IMPORT_ERROR:
+            st.error(f"Erreur d'importation des agents : {IMPORT_ERROR}")
+            return
+        if TriageAgent is None or RAGAgent is None or ReportingAgent is None:
+            st.error("Erreur : Les agents n'ont pas été chargés correctement.")
+            return
+            
         with st.spinner("🔄 Analyse en cours par les agents IA..."):
             try:
                 # 1. Triage Agent
