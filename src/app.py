@@ -1,5 +1,6 @@
 import sys
 import os
+import re  # New import for regex
 import base64
 from dotenv import load_dotenv
 
@@ -7,34 +8,38 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Global Sanitization: Explicitly strip newline characters from all critical env vars
-# This fixes the "Invalid non-printable ASCII character" error in Railway/Docker
+# Using Regex to remove ALL non-printable characters (Nuclear Fix)
+def clean_env_var(value):
+    if not value: return ""
+    return re.sub(r'[\x00-\x1f\x7f-\x9f]', '', value).strip()
+
 for key in ["OPENROUTER_API_KEY", "OPENROUTER_BASE_URL", "OPENAI_API_KEY", "OPENAI_API_BASE"]:
     if os.getenv(key):
-        os.environ[key] = os.getenv(key).strip()
+        os.environ[key] = clean_env_var(os.getenv(key))
 
 import streamlit as st
 from fpdf import FPDF
 from fpdf.enums import XPos, YPos
 import io
 
-# --- 1. System Setup ---
-sys.path.append(os.getcwd())
-
-# Import Agents (After load_dotenv to ensure keys are available)
-try:
-    from src.agents.triage_agent import TriageAgent
-    from src.agents.rag_agent import RAGAgent
-    from src.agents.reporter import ReportingAgent
-except ImportError as e:
-    st.error(f"Erreur d'importation des agents : {e}")
-
-# --- 2. Page Configuration ---
+# --- 1. Page Configuration (MUST BE FIRST STREAMLIT COMMAND) ---
 st.set_page_config(
     page_title="CitizenAI - Gestion Intelligente",
     page_icon="🇲🇦",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# --- 2. System Setup ---
+sys.path.append(os.getcwd())
+
+# Import Agents (Safe Import)
+try:
+    from src.agents.triage_agent import TriageAgent
+    from src.agents.rag_agent import RAGAgent
+    from src.agents.reporter import ReportingAgent
+except ImportError as e:
+    st.error(f"Erreur d'importation des agents : {e}")
 
 # --- 3. Custom CSS (Glassmorphism, Responsive, French LTR) ---
 st.markdown("""
@@ -44,6 +49,12 @@ st.markdown("""
     
     * {
         font-family: 'Inter', sans-serif;
+    }
+
+    /* Force Sidebar Background (Fix for 'Invalid color' error) */
+    [data-testid="stSidebar"] {
+        background-color: #1e2130 !important;
+        border-right: 1px solid rgba(0, 64, 255, 0.2);
     }
 
     /* Deep Blue Theme (#0040ff) */
@@ -192,7 +203,7 @@ def create_pdf(report_text):
         # Handle unicode roughly with latin-1 replacement
         safe_text = str(report_text).encode('latin-1', 'replace').decode('latin-1')
         # Fix: txt -> text
-        pdf.multi_cell(0, 10, text=safe_text)
+        pdf.multi_cell(0, 10, text=safe_text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         
         # Correctly handling fpdf2 byte output
         return bytes(pdf.output())
