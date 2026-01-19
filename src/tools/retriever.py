@@ -12,7 +12,7 @@ def get_retriever():
     embeddings = OpenAIEmbeddings(
         model="openai/text-embedding-3-small",
         openai_api_key=os.getenv("OPENROUTER_API_KEY"),
-        openai_api_base=os.getenv("OPENROUTER_BASE_URL").rstrip('/')
+        openai_api_base=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip('/')
     )
     
     # تحميل قاعدة البيانات

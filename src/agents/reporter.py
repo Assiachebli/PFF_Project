@@ -10,7 +10,7 @@ class ReportingAgent:
             model="openai/gpt-4o-mini", 
             temperature=0,
             openai_api_key=os.getenv("OPENROUTER_API_KEY"),
-            openai_api_base=os.getenv("OPENROUTER_BASE_URL").rstrip('/')
+            openai_api_base=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip('/')
         )
         self.parser = StrOutputParser()
 

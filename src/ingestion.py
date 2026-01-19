@@ -32,7 +32,7 @@ def ingest_docs():
     embeddings = OpenAIEmbeddings(
         model="openai/text-embedding-3-small", # زيدي 'openai/' قبل اسم الموديل ف OpenRouter
         openai_api_key=os.getenv("OPENROUTER_API_KEY"),
-        openai_api_base=os.getenv("OPENROUTER_BASE_URL").rstrip('/') # كنحيدو الـ slash الأخير لضمان الخدمة
+        openai_api_base=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip('/') # كنحيدو الـ slash الأخير لضمان الخدمة
     )
     
     print("--- جاري إنشاء الـ Vector DB... (انتظري قليلاً) ---")

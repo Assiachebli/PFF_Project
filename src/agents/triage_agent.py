@@ -13,7 +13,7 @@ class TriageAgent:
         self.llm = ChatOpenAI(
             model="openai/gpt-4o-mini", 
             openai_api_key=os.getenv("OPENROUTER_API_KEY"),
-            openai_api_base=os.getenv("OPENROUTER_BASE_URL").rstrip('/')
+            openai_api_base=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip('/')
         )
 
     def analyze_complaint(self, complaint_text):

@@ -8,6 +8,7 @@ load_dotenv()
 
 import streamlit as st
 from fpdf import FPDF
+from fpdf.enums import XPos, YPos
 import io
 
 # --- 1. System Setup ---
@@ -166,6 +167,9 @@ st.markdown("""
 # --- 4. Helper Functions ---
 def create_pdf(report_text):
     """Generates a PDF from the report text."""
+    if not report_text:
+        return None
+        
     try:
         pdf = FPDF()
         pdf.add_page()
@@ -173,14 +177,16 @@ def create_pdf(report_text):
         
         # Title
         pdf.set_font("Helvetica", 'B', 16)
-        pdf.cell(200, 10, txt="Rapport Decisionnel - CitizenAI", ln=1, align='C')
+        # Fix: txt -> text, ln -> new_x/new_y for fpdf2 using Enums
+        pdf.cell(200, 10, text="Rapport Decisionnel - CitizenAI", new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
         pdf.ln(10)
         
         # Body
         pdf.set_font("Helvetica", size=11)
         # Handle unicode roughly with latin-1 replacement
-        safe_text = report_text.encode('latin-1', 'replace').decode('latin-1')
-        pdf.multi_cell(0, 10, txt=safe_text)
+        safe_text = str(report_text).encode('latin-1', 'replace').decode('latin-1')
+        # Fix: txt -> text
+        pdf.multi_cell(0, 10, text=safe_text)
         
         # Correctly handling fpdf2 byte output
         return bytes(pdf.output())
@@ -191,6 +197,11 @@ def create_pdf(report_text):
 # --- 5. State Management ---
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
+
+# Ensure API Key and Base URL are loaded
+if not os.getenv("OPENROUTER_API_KEY"):
+    st.error("⚠️ Erreur Critique : Clé API `OPENROUTER_API_KEY` manquante dans le fichier .env")
+    st.stop()
 
 # --- 6. Views ---
 
@@ -254,13 +265,21 @@ def dashboard_view():
                 triage_agent = TriageAgent()
                 analysis = triage_agent.analyze_complaint(user_input)
                 
+                if not analysis:
+                     st.error("Erreur : L'agent de triage n'a renvoyé aucune réponse. Vérifiez la connexion API.")
+                     return
+
                 # 2. RAG Agent
                 rag_agent = RAGAgent()
-                legal_advice = rag_agent.get_legal_advice(analysis['category'], analysis['summary_ar'])
+                legal_advice = rag_agent.get_legal_advice(analysis.get('category', 'Général'), analysis.get('summary_ar', ''))
 
                 # 3. Reporting Agent
                 reporting_agent = ReportingAgent()
                 final_report = reporting_agent.generate_report(analysis, legal_advice)
+                
+                if not final_report:
+                    st.error("Erreur : Impossible de générer le rapport final.")
+                    return
 
                 # --- Results Display ---
                 
@@ -285,7 +304,7 @@ def dashboard_view():
                     st.markdown(f"""
                         <div class='glass-card' style='border-left: 4px solid #0040ff;'>
                             <h4 style='color: white;'>⚖️ Avis Juridique</h4>
-                            <div style='color: #ccc; font-size: 0.9em;'>{legal_advice}</div>
+                            <div style='color: #ccc; font-size: 0.9em;'>{legal_advice if legal_advice else "Non disponible"}</div>
                         </div>
                     """, unsafe_allow_html=True)
 
@@ -308,7 +327,7 @@ def dashboard_view():
                     st.error("Erreur lors de la génération du PDF.")
 
             except Exception as e:
-                st.error(f"Une erreur est survenue : {e}")
+                st.error(f"Une erreur système est survenue : {e}")
 
 # --- 7. Main Loop ---
 if st.session_state['logged_in']:
