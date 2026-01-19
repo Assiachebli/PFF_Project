@@ -6,6 +6,12 @@ from dotenv import load_dotenv
 # --- 0. Load Environment Variables FIRST ---
 load_dotenv()
 
+# Global Sanitization: Explicitly strip newline characters from all critical env vars
+# This fixes the "Invalid non-printable ASCII character" error in Railway/Docker
+for key in ["OPENROUTER_API_KEY", "OPENROUTER_BASE_URL", "OPENAI_API_KEY", "OPENAI_API_BASE"]:
+    if os.getenv(key):
+        os.environ[key] = os.getenv(key).strip()
+
 import streamlit as st
 from fpdf import FPDF
 from fpdf.enums import XPos, YPos
