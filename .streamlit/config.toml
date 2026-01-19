@@ -11,3 +11,12 @@ backgroundColor = "#0e1117"
 secondaryBackgroundColor = "#1e2130"
 textColor = "#fafafa"
 font = "sans serif"
+
+# Explicitly define these to stop "Invalid color" warnings in browser console
+[theme.sidebar]
+backgroundColor = "#1e2130"
+secondaryBackgroundColor = "#1e2130"
+textColor = "#fafafa"
+widgetBackgroundColor = "#1e2130"
+widgetBorderColor = "rgba(0, 64, 255, 0.2)"
+skeletonBackgroundColor = "#1e2130"
